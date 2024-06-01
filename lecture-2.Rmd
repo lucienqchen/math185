@@ -1,0 +1,234 @@
+---
+title: "Math 185 Lecture 2"
+author: "Lucien Chen"
+date: "2024-04-04"
+output: html_document
+---
+
+## Lecture 2
+
+### Multiple Sample Categorical Data
+
+Suppose we want to know whether two 6-faced die, with faces $1,...,6$ have the same chances of landing on any digit.
+
+We throw the first die $m=200$ times, obtaining
+
+$$ X_1,...,X_m \in \{1,...,6\} $$
+
+and then throw the second die $n=300$ times, obtaining
+
+$$ Y_1,...,Y_n \in \{1,...,6\} $$ We assume that $X_1,...,X_m$ are i.i.d, that $Y_1,...,Y_n$ are i.i.d, and that the two samples are independent from each other.
+
+We then formalize the question as the following hypothesis testing problem:
+
+$H_0$: *the dice X and Y have the same distribution*
+
+versus
+
+$H_1$: *the dice X and Y do not have the same distribution*
+
+Under the assumptions we made, the counts
+
+$$ M_s = \#\{i:X_i=s\}, s=1,..,6 $$ $$ N_s = \#\{i:Y_i=s\}, s=1,...,6 $$
+
+are (jointly) sufficient.
+
+Plots of choice are the following: segmented barplots, side-by-side barplots.
+
+#### Pearson goodness-of-fit test
+
+The observed counts are
+
+$$ M_s = \#\{i:X_i=s\}, s=1,..,6 $$ $$ N_s = \#\{i:Y_i=s\}, s=1,...,6 $$
+
+Under the null, X and Y have the same distribution, say $p=(p_1,...,p_6)$ and the expected counts are
+
+$$ E(M_s)=mp_s $$ $$ E(N_s)=np_s $$
+
+The issue is that we do not know p.
+
+The idea is to estimate p based on the combined sample:
+
+$$ \hat{p}_s = \frac{M_s + N_s}{m + n} $$ With $\hat{p}$, we can now define the estimated expected counts
+
+$$ \hat{E}(M_s) = m\hat{p}_s $$ $$ \hat{E}(N_s) = n\hat{p}_s $$
+
+The final step is to compare the observed and estimated expected counts with the usual Pearson test statistic:
+
+$$ D = \sum_{s=1}^6[\frac{(M_s-m\hat{p}_2)^2}{m\hat{p}_s} + \frac{(N_s - n\hat{p}_s)^2}{n\hat{p}_s}] $$
+
+#### Obtaining a p-value
+
+**Asymptotic theory**
+
+Under the null hypothesis, D has asymptotically $(m, n \rightarrow \infty)$ the chi-squared distribution with $6-1=5$ degrees of freedom.
+
+This should be understood as a numerical approximation, meaning that
+
+$$ P_0(D \geq d) \rightarrow P(\chi \geq d), n \rightarrow \infty $$
+
+for any $d > 0$, where $\chi$ has the chi-squared distribution with 5 degrees of freedom.
+
+**Estimation by bootstrap**
+
+Obtaining a p-value by direct Monte Carlo simulation is not an option because the distribution is unknown under the null hypothesis (because it is composite and not simple).
+
+We use a bootstrap approach: We *estimate* the distribution of the test statistic D under the null hypothesis by its distribution when X and Y have distribution $\hat{p}$. From that we obtain a bootstrap p-value.
+
+Because that distribution is too complicated, we approximate it by *Monte Carlo sampling*.
+
+The result is a bootstrap MC p-value.
+
+Let B be a large integer. (Think of $B$ as $B=\infty$).
+
+For $b=1,...,B$, do the following:
+
+1.  Generate samples from the estimated null distribution:
+
+$X_1^{(b)},...,X_m^{(b)}$ are drawn i.i.d from $(\hat{p}_1,...,\hat{p}_6)$
+
+$Y_1^{(b)},...,Y_n^{(b)}$ are drawn i.i.d from$(\hat{p}_1,...,\hat{p}_6)$
+
+2.  Compute the value of the test statistic:
+
+$$ D_b = \sum_{s=1}^6 [\frac{(M_s^{(b)} - m\hat{p}_s^{(b)})^2}{m\hat{p}_s^{(b)}} + \frac{(N_s^{(b)} - n\hat{p}_s^{(b)})^2}{n\hat{p}_s^{(b)}}] $$ where $$ M_s^{(b)} = \#\{i:X_i^{(b)}=s\}, N_s^{(b)} = \#\{i:Y_i^{(b)}=s\} $$
+
+and
+
+$$ \hat{p}_s^{(b)} = \frac{M_s^{(b)} + N_s^{(b)}}{m + n} $$
+
+The estimate p-value is
+
+bootstrap MC p-value = $\frac{\#\{b: D_b \geq D_0]\} + 1}{B + 1}$
+
+where $D_0$ is the observed value of the test statistic.
+
+The methodology extends to compare the distributions any number $g \geq 2$ dice with the same number of faces $S \geq 2$.
+
+(The sample sizes may be different.)
+
+The *estimated* expected counts (under the null hypothesis) are obtained based on all the samples combined.
+
+**Asymptotic theory**
+
+Under the null hypothesis, the resulting test statistic has asymptotically (as all the sample sizes diverge) the chi-squared distribution with $(g-1)(S-1)$ degrees of freedom.
+
+For example, consider a third die Z, which we roll, say, $k=100$ times.
+
+The counts are
+
+$$ M_s = \#\{i:X_i=s\}, s=1,...,6 $$ $$ N_s = \#\{i:Y_i=s\}, s=1,...,6 $$ $$ K_s = \#\{i:Z_i=s\}, s=1,...,6 $$
+
+with
+
+$$ \hat{p}_s = \frac{M_s + N_s + K_s}{m + n + k} $$
+
+The Pearson test statistic takes the form:
+
+$$ D = \sum_{s=1}^6[\frac{(M_s-m\hat{p}_2)^2}{m\hat{p}_s} + \frac{(N_s - n\hat{p}_s)^2}{n\hat{p}_s} + \frac{(K_s - k\hat{p}_s)^2}{k\hat{p}_s}] $$ **Asymptotic theory**
+
+Under the null hypothesis, the resulting test statistic has asymptotically (as all the sample sizes diverge) the chi-squared distribution with $(3-1)(6-1)=10$ degrees of freedom.
+
+Alternative a p-value may be found via bootstrap.
+
+Instead of Pearson's statistic, we could use the likelihood ratio statistic, and everything applies verbatim.
+
+Suppose we now want to know whether, when rolling X (6 faces) and Y (8 faces) together, the digits they show are independent of each other.
+
+We throw the pair of dice together $n=500$ times and record the outcomes, obtaining
+
+$$ (X_1, Y_1),...,(X_n,Y_n) $$
+
+with
+
+$$ (X_i, Y_i) \in \{1,...,6\} \times \{1,...,8\} $$
+
+We assume the throws are i.i.d, meaning that
+
+$$ (X_1, Y_1),...,(X_n,Y_n) $$ are i.i.d.
+
+In this setting, the variables X and Y are paired.
+
+We formalize the question as the following hypothesis testing problem
+
+$H_0$: the dice X and Y are independent
+
+$H_1$: the dice X and Y are not independent
+
+#### Summary Statistics and Graphics
+
+Under our assumptions, the joint counts are *sufficient* and used as summary statistics:
+
+$$ N_{s,t} = \#\{i:(X_i,Y_i)=(s,t)\} $$
+
+They are often organized in a contigency table.
+
+The main plots are: the segmented bar plot, the side-by-side bar plot and the mosaic plot.
+
+#### Pearson test for independence
+
+Let $p=(p_1,..,p_6)$ be the (marginal) distribution of X
+
+$$ P(X=s) = p_s, s=1,...,6 $$
+
+Let $q=(q_1,...q_8)$ be the (marginal) distribution of Y
+
+$$ P(Y=t)=q_t, t=1,...,8 $$
+
+Under the null hypothesis, X and Y are independent, so the expected counts are
+
+$$ E(N_{s,t}) = nP(X=s, Y=t) $$ $$ = nP(X=s)P(Y=t) $$ $$ = np_sq_t $$
+
+We simply estimate p and q based on the marginal counts
+
+$$ N_{s,.} = \#\{i:X_i=s\} $$
+
+$$ N_{.,t} = \#\{i: Y_i=t\} $$ The estimates for $p_s$ and $q_t$ are
+
+$$ \hat{p}_s = \frac{N_{s,.}}{n} $$
+
+$$ \hat{q}_t = \frac{N_{.,t}}{n} $$
+
+With $\hat{p}$ and $\hat{q}$ defined, we can obtain estimated expected counts (under the null hypothesis)
+
+$$ \hat{E}(N_{s,t}) = n\hat{p}_s\hat{q}_t = \frac{N_{s,.} \times N_{.,t}}{n} $$
+
+**Asymptotic theory**
+
+Under the null hypothesis, D has asymptotically $(n \rightarrow \infty)$ the chi-squared distribution with $(6-1)(8-1)=35$ degrees of freedom. (Numerical approximation)
+
+**Estimation by bootstrap**
+
+Again, the distribution is unknown under the null hypothesis (because it is composite and not simple).
+
+We use a bootstrap approach: We estimate the distribution of the test statistic D under the null hypothesis by its distribution when X and Y are independent with distributions $\hat{p}$ and $\hat{q}$ respectively.
+
+From that, we obtain a bootstrap p-value.
+
+Let B be a large integer. (Think of $B$ as $B = \infty$.)
+
+For $b=1,...,B$, do the following:
+
+1.  Generate a sample from the estimated null distribution:
+
+$$ (X_1^{(b)}, Y_1^{(b)}),...,(X_n^{(b)}, (Y_n^{(b)}))$$ are drawn from i.i.d $\hat{p} \times \hat{q}$
+
+meaning $X$ are drawn i.i.d from $(\hat{p}_1,...,\hat{p}_6)$
+
+and, independently, $Y$ are drawn i.i.d from $(\hat{q}_1,...,\hat{q}_6)$
+
+2.  Compute the value of the test statistic, obtaining $D_b$.
+
+The estimated p-value is
+
+bootstrap p-value $= \frac{\#\{b: D_b \geq D_0 \} + 1}{B + 1}$
+
+where $D_0$ is the observed value of the test statistic.
+
+Under the null hypothesis, $X_i$ and $Y_i$ are independent, and so, for any permutation $\sigma = (\sigma_1,...,\sigma_n)$ of {1,...,n}, the permuted data
+
+$$ (X_1, Y_{\sigma_1}),...,(X_n, Y_{\sigma_n}) $$
+
+has the same distribution as the original data
+
+$$ (X_1,Y_1),...,(X_n, Y_n) $$

@@ -1,0 +1,53 @@
+---
+title: "Math 185 Lecture 2"
+author: "Lucien Chen"
+date: "2024-04-09"
+output: html_document
+---
+
+## Lecture 3
+
+Under the null hypothesis, $X_i$ and $Y_i$ are independent, and so, for any permutation $\sigma = (\sigma_1,...,\sigma_n)$ the *permuted* data $$ (X_1, Y_{\sigma_1}),...,(X_n, Y_{\sigma_n}) $$ has the same distribution as the original data $$ (X_1, Y_1),...(X_n, Y_n) $$
+
+Let $D_\sigma$ denote the test statistic when applied to the data permuted according to the permutation $\sigma$.
+
+Suppose that we reject for large values of this statistic.
+
+This statistic could be Pearson's, or the likelihood ratio, etc.
+
+The permutation p-value is defined as
+
+$$\text{permutation p-value} = \frac{\#\{\sigma : D_\sigma \geq D_0\}}{n!} $$
+
+where $D_0$ denotes the observed value of the statistic. This is the value applied to the un-permuted data. (Permutation Monte Carlo)
+
+Let $B$ be a large integer.
+
+For $b=1,...B$, do the following:
+
+1.  Draw $\sigma_b$ uniformly from the permutations of $\{1,...,n\}$ and permute the sample accordingly.
+
+2.  Compute the value of the test statistic, $D_{\sigma_b}$.
+
+The *estimated* permutation p-value is
+
+$$ \text{permutation MC p-value} = \frac{\#\{b: D_{\sigma_b} \geq D_0\} + 1}{B + 1} $$ where $D_0$ dentoes the observed value of the statistic.
+
+### Fisher's Exact Test
+
+R.A Fisher developed an exact test for testing the independence of two binary variables.
+
+Consider obtaining a p-value by permutation.
+
+Here the estimated expected counts under the null hypothesis are too small to be able to rely on the asymptotic approximation.
+
+It turns out, under the null hypothesis ("random guessing"), the test statistic has hypergeometric distribution with parameters (4, 4, 4).
+
+This is the distribution that arises when sampling 4 balls uniformly at random without replacement from an urn with 4 red and 4 blue balls, and counting the number of red balls.
+
+This yields the p-value:
+
+$$ P_0(N \geq 3) = P(\text{Hyper}(4, 4, 4) \geq 3)
+= \frac{{4 \choose 3} {4 \choose 1}}{{8 \choose 4}} + \frac{{4 \choose 4} {4 \choose 0}}{{8 \choose 4}} $$
+
+This generalizes to any $2 \times 2$ contingency table.

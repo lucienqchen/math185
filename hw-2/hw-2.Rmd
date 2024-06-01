@@ -1,0 +1,107 @@
+---
+title: "Math 185 Homework 2"
+author: "Lucien Chen"
+date: "2024-04-16"
+output: html_document
+---
+
+## Homework 2
+```{r setup, echo=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+### Question 1
+
+```{r simiulation, echo=TRUE}
+K <- c(5, 10, 20, 50, 100)
+N <- c(2*K, 4*K, 5*K, 6*K, 8*K, 10*K)
+p_mat = matrix(NA, nrow=length(K), ncol = length(N))
+for (i in 1:length(K)) {
+  for (j in 1:length(N)) {
+    p_vals <- vector("numeric", 10000)
+    for (k in 1:10000) {
+      x <- sample(1:K[i], N[j], replace=TRUE)
+      p <- chisq.test(x)
+      p_vals[k] = p$p.value
+    }
+    p_mat[i, j] = mean(p_vals)
+  }
+}
+
+p_mat
+```
+
+As we can see from the probability matrix, where each entry $A_{i,j}$ corresponds to the p-value returned from the test with the $i$-th entry of K and $j$-th entry of N. As both k and n increase, the probability for the Pearson test approaches 0.
+
+### Question 2
+
+```{r quantiles, echo=TRUE}
+data <- rnorm(10000, 0, 1)
+```
+Type 1 computes the quantiles using the inverse of the empirical distribution function
+
+```{r quantile 1, echo=TRUE}
+quantile(data, type=1)
+```
+```{r plot 1, echo=TRUE}
+plot(quantile(data, type=1))
+```
+
+Type 3 computes the quantiles using the nearest even order statistic.
+
+```{r quantile 2, echo=TRUE}
+quantile(data, type=3)
+```
+
+```{r plot 2, echo=TRUE}
+plot(quantile(data, type=3))
+```
+In this case, the results are identical to that of type 1.
+
+Type 4 calculates the quantiles via a linear interpolation of the empirical cdf.
+```{r quantile 3, echo=TRUE}
+quantile(data, type=4)
+```
+
+```{r plot 3, echo=TRUE}
+plot(quantile(data, type=4))
+```
+Type 5 calculates the quantiles using a piecewise linear function where the knots are values midway through steps of the empirical cdf.
+```{r quantile 4, echo=TRUE}
+quantile(data, type=5)
+```
+
+```{r plot 4, echo=TRUE}
+plot(quantile(data, type=5))
+```
+Here we start to see some differences in the calculations of some of the quantiles. Note, however, that these differences are quite small (median is .0058 vs .0057 in other cases). 
+
+Type 6 calculates quantiles using the expectation of the cdf.
+```{r quantile 5, echo=TRUE}
+quantile(data, type=6)
+```
+
+```{r plot 5, echo=TRUE}
+plot(quantile(data, type=6))
+```
+In this case, we see that the results are the same as those from using the type 5 method for calculating quantiles. In that regard, we can see that this case is also different from the first three methods we went over.
+
+### Question 3
+```{r simulation 2, echo=TRUE}
+uniform.test <- function(x, B=10000) {
+  a = min(x)
+  b = max(x)
+  D_0 = b - a
+  tests = vector("numeric", B)
+  for (b in 1:B) {
+    sample_dist = sample(x, replace=TRUE)
+    a_b = min(sample_dist)
+    b_b = max(sample_dist)
+    D_b = b_b - a_b
+    tests[b] = D_b
+  }
+  p_value = (as.integer(tests >= D_0) + 1)/(B + 1)
+  return(p_value)
+}
+```
+In my function uniform.test, I define the test stat to be the difference of max and min of our original data. Then, I conduct a bootstrap where I repeatedly sample the data and create a boostrap statistic, the difference between the max and min of the sample data. Then I compute a p-value and return it.

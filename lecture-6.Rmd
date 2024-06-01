@@ -1,0 +1,168 @@
+---
+title: "Math 185 Lecture 6"
+author: "Lucien Chen"
+date: "2024-04-18"
+output: html_document
+---
+
+## Lecture 6
+
+### Two-sample paired data
+
+Suppose we have one bivariate numericla sample
+
+$$ (X_1, Y_1),...,(X_n,Y_n) \text{ with values in } \mathbb{R} \times \mathbb{R} $$
+
+The variables X and Y are numerical and paired.
+
+We assume that $(X_1, Y_1),...,(X_n,Y_n)$ are i.i.d from a continuous distribution.
+
+We assume the variables are directly comparable.
+
+ex. father and son heights (Pearson's data)
+
+Suppose we want to compare the magnitude of X and Y. We take the difference
+
+$$ Z_i = Y_i - X_i $$
+
+and work with the numerical sample
+
+$$ Z_1,...,Z_n $$
+
+One way to formalizea a situation in which
+
+$$ X \text{ and } Y \text{ are of same magnitude} $$
+
+is as the null hypothesis that
+
+$$ Z \text{ is symmetric about 0} $$
+
+There are a number of tests for symmetry.
+
+The most famous one is the Wilcoxon signed-rank test. Another one is the Smirnov test for symmetry based on 
+
+$$ sup_{x \geq 0} (1 - \hat{F}(x) - \hat{F}(-x)) $$
+
+where $\hat{F}$ is the empirical distribution function.
+
+Suppose we want to model how X and Y vary together. In that case, we do not need X and Y to be comparable - they can be different types of measurements.
+
+This leads to a correlation analysis or a regression analysis.
+
+### Two-sample unpaired data
+
+Suppose we have two numerical samples
+
+$$ X_1,...,X_n \text{ and } Y_1,...,Y_m $$
+
+The X sample is assumed i.i.d from some distribution $P_x (F_x, f_x)$. The Y sample is assumed i.i.d from some distribution $P_y (F_y, f_y)$. And the two samples are assumed independent.
+
+We assume the variables are directly comparable.
+
+ex. Math SAT scores for some seniors at La Jolla High School and for some seniors at University City High School
+
+**Kolmogorov-Smirnov test** 
+
+Suppose we want to test whether the samples come from the same distribution. The problem is equivalent to 
+
+$$ H_0: F_x = F_y \text{ versus } H_1: F_x \neq F_y $$
+
+Let $\hat{F}_x$ denote the empirical cdf for $X_1,...,X_n$.
+Let $\hat{F}_y$ denote the empirical cdf for $Y_1,...,Y_m$.
+
+The general idea is to reject for large values of 
+
+$$\Delta(\hat{F}_x, \hat{F}_y)$$
+
+where $\Delta$ is a measure of discrepancy between distribution functions.
+
+The Kolmogorov-Smirnov test uses the sup-norm
+
+$$\Delta(F, G) = sup_{-\infty < z < \infty} |F(z) - G(z)| $$
+
+Explicitly, the test rejects for large values of 
+
+$$ D = sup_{-\infty < z < \infty} | \hat{F}_x(z) - \hat{F}_y(z) | $$
+
+As in the one-sample variant, this statistic can be computed very easily using a simple formula.
+
+**Theory**
+
+Under the null hypotehsis, $\sqrt{mn/*m+n)}D$ has asymptotically the Kolmogorov distribution.
+
+Or we can approxiamte the p-value by bootstrap.
+
+Or we can obtain a p-value by permutation.
+
+Under the null, the samples have the same distribution.
+
+Placing ourselves under the null hypothesis, we estimate that distribution by combining the two samples:
+
+$$ \hat{P} = \text{empirical distribution of } X_1,...,X_n,Y_1,...,Y_m $$
+
+The bootstrap null distribution of D is its distribution when $X_1,...,X_n$ are i.i.d and $Y_1,...,Y_m$ are i.i.d $\hat{p}$.
+
+As usual, this distribution is very complicated and we resort to Monte Carlo sampling to approximate it.
+
+Let B be a large integer.
+
+For $b=1,...,B$, do the following:
+
+1. Generate two samples from the estiamted null distribution:
+
+$$ X_1^{(b)},...,X_n^{(b)} \text{ drawn iid from } \hat{P} \\
+Y_1^{(b)},...,Y_m^{(b)} \text{ drawn iid from } \hat{P} $$
+
+2. Compute the value of the test statistic:
+
+$$ D_b = \Delta(\hat{F}_x^{(b)}, \hat{F}_y^{(b)}) = sup_z | \hat{F}_x^{(b)} - \hat{F}_y^{(b)} | $$
+
+**Permutation p-value**
+
+Define the combined sample
+
+$$ Z_1,...,Z_{m+n} = X_1,...,X_n,Y_1,...,Y_m $$
+
+Under the null hypothesis, $Z_k$ are exchangeable
+
+The permutation distribution of D is its distribution over all the permutations of the combined sample.
+
+1. For each permutation $\pi$ of $\{1,...,m+n\}$, let 
+
+$$ X_i^{\pi} = Z_{\pi(i)} \\
+Y_i^{\pi} = Z_{\pi(j + m)} $$
+
+2. Compute the value of the test statistic:
+
+$$ D_{\pi}= \Delta(\hat{F}_{x\pi}, \hat{F}_{y\pi}) = sup_z | \hat{F}_{x\pi}(z) - \hat{F}_{y\pi}(z) | $$
+
+### Tests based on ranks
+
+Let $R_X(i)$ be the rank of $X_i$ in the combined sample.
+
+Let $R_Y(j)$ be the rank of $Y_j$ in the combined sample.
+
+A rank test is any test based on a statistic that only depends on these ranks.
+
+The set of X ranks determine the set of Y ranks because the ranks sum to (m + n)(m + n + 1)/2. Therefore, any reasonable test statistic can be computed based solely on X ranks.
+
+Equivalently, a rank-based test statistic is one that can be computed based solely on the sample pattern.
+
+The sample pattern or label sequence looks like this, e.g.
+
+$$ XXXYYXYYXXY $$
+
+The Wilcoxon rank-sum test rejects for large and small values of
+
+$$ V = \sum_{i=1}^{m} R_X(i) $$
+
+The Mann-Whitney U-test rejects for large and small values of 
+
+$$ U = \sum_{i=1}^m \sum_{j=1}^n \mathbb{I}(X_i > Y_i) $$
+
+It is completely equivalent to the Wilcoxon rank-sum test!
+
+Indeed (when there are no ties)
+
+$$ U = V = -\frac{m(m+1)}{2} $$
+

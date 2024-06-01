@@ -1,0 +1,106 @@
+---
+title: "Math 185 Lecture 7"
+author: "Lucien Chen"
+date: "2024-04-23"
+output: html_document
+---
+
+## Lecture 7
+
+### Comparing Means
+
+Let $\mu_X$ be the mean of X.
+
+Let $\mu_Y$ be the mean of Y.
+
+Suppose we want to test
+
+$$H_0: \mu_X = \mu_Y \text{ vs } H_1: \mu_X \neq \mu_Y $$
+
+First assume the variances are equal $\sigma_X^2 = \sigma_Y^2$.
+
+The Student t-test rejects for large values of |T|, where 
+
+$$ T = \frac{\bar{X} - \bar{Y}}{S\sqrt{\frac{1}{m} + \frac{1}{n}}}$$
+where $S^2$ is the pooled sample variance
+
+$$ S^2 = \frac{1}{m + n - 2}(\sum_{i=1}^m (X_i - \bar{X})^2 + \sum_{j=1}^n (Y_j - \bar{Y})^2) $$
+$$ = \frac{m - 1}{m + n -2}S_x^2 + \frac{n-1}{m + n - 2}S_Y^2$$
+
+**Theory**
+
+Under the null hypothesis, assuming both distributions are *normal*, T has the t-distribution with m + n - 2 df.
+
+The normality assumption is not crucial because
+
+**Theory**
+
+Under the null hypothesis, asymptotically $(m, n \rightarrow \infty)$, T has the standard normal distribution.
+
+The Welch t-test rejects for large values of |T|, where
+
+$$ T = \frac{\bar{X} - \bar{Y}}{\sqrt{\frac{S_X^2}{m} + \frac{S_Y^2}{n}}} $$
+
+**Theory**
+
+Under the null hypothesis, T has approximately a t-distribution. The degrees of freedom are given by a complicated formula.
+
+A bootstrap approach is based on estimating the distribution of T under the null hypothesis.
+
+We craft a bootstrap world in which the null hypothesis is true. We do this by centering the two samples so that they both have the same mean:
+
+$$ X_1 - \bar{X},...,X_m - \bar{X} \text{ with empirical distribution } \hat{P}_X^0 $$
+$$ Y_1 - \bar{Y},...,Y_n - \bar{Y} \text{ with empirical distribution } \hat{P}_Y^0 $$
+
+Let B be a large integer.
+
+For $b=1,...,B$, do the following:
+
+1. Generate two samples:
+
+$$ X_1^{(b)},...,X_m^{(b)} \text{ drawn iid from } \hat{P}_X^0 $$
+$$ Y_1^{(b)},...,Y_m^{(b)} \text{ drawn iid from } \hat{P}_Y^0 $$
+
+2. Compute the value of the test statistic:
+
+$$ T_b = \frac{\bar{X}_b = \bar{Y}_b}{\sqrt{\frac{S_{x,b}^2}{m} + \frac{S_{y,b}^2}{n}} $$
+
+Another (equivalent) approach is to build a bootstrap confidence interval for $\mu_x - \mu_y$ based on the Welch t-ratio, and then derive a p-value from that.
+
+
+### Multiple-Sample Numerical Data
+
+We have multiple unpaired samples or groups of observations representing the same type of measurement:
+
+$$ \text{Group 1}: X_{1,1},X_{2,1},...,X_{n1,1} $$
+.
+.
+.
+$$ \text{Group J}: X_{1,J},X_{2,J},...,X_{n1,J} $$
+
+The total sample size is 
+
+$$ N = n_1 + ... + n_J $$
+
+When the groups are of the same size $(n_1=...=n_j)$, the design is balanced.
+
+We assume that the samples are independent and Sample j $(X_{1,j},...,X_{n_j,j})$ is i.i.d from some distribution $P_j$.
+
+#### All pairwise comparisons
+
+One way to compare multiple samples is to do perform all pairwise comparisons using tools for comparing two samples.
+
+With J groups, there are ${J \choose 2}$ pairwise comparisons to perform.
+
+This approach leads to performing multiple tests and one may want to adjust for that. (More on multiple testing later in the quarter).
+
+Suppose we want to test whether all the samples come from the same distribution:
+
+$$H_0: P_1 = ... = P_J $$
+
+Examples include:
+
+$$ D = \Delta(\hat{F}_1,...,\hat{F}_J) = \sum_{j=1}^{J-1}\sum_{k=j+1}^{J} sup_{-\infty < z < \infty} |\hat{F}_j(z) - \hat{F}_k(z)| $$
+or 
+$$ D = \Delta(\hat{F}_1,...,\hat{F}_J) = \sum_{j=1}^{J} sup_{-\infty < z < \infty} |\hat{F}_j(z) - \hat{F}_k(z)| $$
+

@@ -1,0 +1,234 @@
+---
+title: "Math 185 Lecture 12"
+author: "Lucien Chen"
+date: "2024-05-09"
+output: html_document
+---
+
+## Lecture 12
+
+### Bivariate Paired Numerical Data
+
+Suppose we have one bivariate numerical sample
+
+$$ (X_1,Y_1),\dots,(X_n,Y_n) \text{ with values in } \mathbb{R} \times \mathbb{R} $$
+We assume $(X_1,Y_1),\dots,(X_n,Y_n)$ are iid from a continuous distribution.
+
+The values are numerical and paired.
+
+We want to test the strength of their association.
+
+#### Summary Statistics
+
+In addition to summarizing each variable, some form of correlation between the variables is computed.
+
+In addition to a boxplot of each variable a scatterplot helps visualize how the variables vary together.
+
+#### Linear association 
+
+The covariance between two random variables X and Y, with respective means $\mu_X = \mathbb{E}[X]$ and $\mu_Y = \mathbb{E}[Y]$, is given by
+
+$$ Cov(X,Y) = \mathbb{E}[(X-\mu_X)(Y-\mu_Y)]
+= \mathbb{E}[XY] - \mathbb{E}[X]\mathbb{E}[Y] $$
+
+The Pearson correlation is 
+
+$$ Corr(X,Y) = \frac{Cov(X,Y)}{\sqrt{Var(X)Var(Y)}} $$
+
+The corelation is always in [-1, 1]:
+
+- It is equal to 1 iff $X=aY + b$ with $a>0$
+
+- It is equal to -1 iff $X=aY + b$ with $a<0$
+
+**Theorem**
+
+If X and Y are independent, then $Corr(X,Y)=0$. The converse is not true.
+
+The sample covariance is
+
+$$ S_{XY} = \frac{1}{n-1} \sum_{i=1}^{n} (X_i - \bar{X})(Y_i - \bar{Y}) \\
+= \frac{1}{n-1}\sum_{i=1}^{n}X_iY_i - \frac{n}{n-1}\bar{X}\bar{Y} $$
+
+#### Correlation t-test
+
+Suppose we want to test
+
+$$ H_0: Corr(X,Y) = 0 \text{ versus } H_1: Cor(X,Y) \neq 0 $$
+
+It is natural to reject for large values of |R|, where $R = R_{XY}$
+
+Equivalently, we reject the large values of |T|, where 
+
+$$ T = \frac{R\sqrt{n-2}}{\sqrt{1-R^2}} $$
+
+|T| is a strictly increasing funciton of |R|
+
+**Theorem**
+
+If the underlying distribution is normal, under the null hypothesis, T has a t-distribution with n-2 degrees of freedom.
+
+If the normality assumption is not satisfied, the result remains valid asymptotically under the stronger hypothesis of independence.
+
+**Theorem**
+
+If X and Y are independent, T has asymptotically $(n \rightarrow \infty)$ the standard normal distribution.
+
+
+### The Bivariate Normal Distribution
+
+A random vector $(X,Y)$ is said to have a bivariate normal distribution if any linear combination is normally distributed. That is, for any reals $a,b \in \mathbb{R}$, the real-valued random variable aX + bY is normal.
+
+If $(X,Y)$ is bivariate normal with these parameters, then for any $a,b \in \mathbb{R}, aX = bY$ is normal with mean
+
+$$ a\mu_X + b\mu_Y $$
+
+and variance
+
+$$ a^2\sigma_X^2 + b^2\sigma_Y^2 + 2ab\rho\sigma_X\sigma_Y $$
+
+If $(X,Y)$ is bivariate normal, then it is true that $Cor(X,Y) = 0$ implies that X and Y are independent.
+
+#### Bootstrap p-value
+
+Under the null hypothesis, the two variables are uncorrelated.
+
+One way to do that is to keep one of the variables as is and replace the other one by the residual when regressing onto the first one.
+
+For example, we keep $X_i$ as is and replace $Y_i$ with 
+
+
+$$ Y_{i,0} = Y_i - aX_i, a = \frac{S_{XY}}{S_X^2} $$
+
+Check that, indeed, the sample correlation of $(X_1,Y_{1,0}),\dots,(X_n,Y_{n,0})$ is 0
+
+Define
+
+$$ \hat{P}_0 = \text{ empirical distribution of } (X_1,Y_{1,0}),\dots,(X_n,Y_{n,0})) $$
+
+Let B be a large integer.
+
+For $b=1,\dots,B$, dot the following:
+
+1. Generate a bootstrap sample
+
+$$ (X_1^{(b)}, Y_1^{(b)}),\dots,(X_n^{(b)}, Y_n^{(n)}) \text{ iid from } \hat{P}_0 $$
+
+2. Compte the value of the test statistic, obtaining $|R_b|$.
+
+The estimated p-value is
+
+$$ \frac{\#\{b: |R_n| \geq |r|\} + 1}{B + 1} $$
+
+where $|r|$ is the observed value of the test statistic.
+
+#### Permutation p-value
+
+A p-value can be obtained by permutation... but for the null hypothesis that the two variables are independent.
+
+$$ H_0: \text{X and Y are independent} $$
+
+1. For each permutation $\pi$ of {1,...,n}, permute the sample
+
+$$ (X_1, Y_{\pi(1)}),\dots,(X_n,Y_{\pi(n)}) $$
+2. Compute the value of the test statistic, obtaining $|R_\pi|$.
+
+Return 
+
+$$ \text{permutation p value } = \frac{\#\{\pi: |R_\pi| \geq |r| \}}{n!} $$
+
+Unless n is small, the permutation p-value is approximated by Monte Carlo sampling.
+
+### Monotonic Association
+
+#### Spearman rank correlation
+
+- Let $A_i$ denote the rank of $X_i$ among $X_1,\dots,X_n$
+- Let $B_i$ denote the rank of $Y_i$ among $Y_1,\dots,Y_n$
+
+The Spearman correlation is the sample (Pearson) correlation of the ranks (A_i, B_i), i=1,\dots,n,
+
+$$ R_{XY}^{spear} = R_{AB}%{pears} $$
+
+If there are no ties,
+
+$$ R_{XY}^{spear} = 1 - \frac{6}{n^3 - n} \sum_{i=1}^{n}(A_i - B_i)^2 $$
+
+The Spearman correlation is always in [-1, 1]:
+
+- It is equal to 1 iff $X = \varphi(Y)$ for some increasing function $\varphi$
+
+- It is equal to -1 iff $X = \varphi(Y)$ for some decreasing fucntion $\varphi$
+
+The closer the Spearman correlation is to 1 in absolute value, the stronger the monotonic association
+
+Consider the test that rejects for large values of $|R^{spear}|$.
+
+Like any other rank test, it is a permutation test, and therefore a test for independence.
+
+Like any other rank test, the p-value is obtained by permutation.
+
+The test is also distribution-free in the sense that the null distribution of the Spearman correlation only depends on n (as long as there are no ties).
+
+We first defined the sample Spearman correlation.
+
+The corresponding distribution parameter is caleld Spearman's $\rho$ and defined as 
+
+$$ \rho^{spear} = 3\mathbb{E}[sign((X_1 - X_2)(Y_1 - Y_3))] $$
+
+where $(X_1, Y_1), (X_2, Y_2), (X_3, Y_3)$ are iid from the underlying distribution.
+
+Because we can have $\rho^{spear}=0$ even if X and Y are not independent, the Spearman correlation test is not universally consistent for independence.
+
+#### Kendall rank correlation
+
+Define Kendall rank correlation as
+
+$$ R_{XY}^{kend} = \frac{2}{n(n-1)}\sum_{1 \leq i \leq j \leq n} sign((X_j - X_i)(Y_j-Y_i)) $$
+
+It is very closely related to the Spearman correlation and satisfies the same properties (it is also a rank statistic).
+
+We first define the Kendall rank correlation.
+
+The corresponding distribution parameter is called Kendall's $\tau$ and defined as 
+
+$$ \tau = \mathbb{E}[sign((X_1-X_2)(Y_1-Y_2))] $$
+
+where $(X_1,Y_1),(X_2,Y_2)$ are iid from the underlying distribution.
+
+Because we can have $\tau=0$ even if X and Y are not independent, the Kendall rank correlation test is not universally consistent for independence.
+
+
+### Arbitrary Association
+
+The distribution function of (X,Y) is defined as 
+
+$$ F_{XY}(x,y) = \mathbb{P}(X \leq x, Y \leq y) $$
+
+**Theorem**
+
+A distribution of $\mathbb{R} \times \mathbb{R}$ is characterized by its distribution function. In particular,
+
+$$ F^{XY}(x,y) = F^{X}(x)F^{Y}(y) \logeq  \text{ X and Y are independent}$$
+
+The empirical distribution function of $(X_1,Y_1),\dots,(X_n,Y_n)$ is defined as
+
+$$ \hat{F}_{XY}(x,y) = \frac{1}{n}\sum_{i=1}^{n} \mathbb{I}\{X_i \leq x, Y_i \leq y \} $$
+
+Hoeffding, and others later, proposed tests of independence based on comparing the empirical joint CDF to the product of the empirical marginals CDFs.
+
+An example of such a test rejects for large values of 
+
+$$ D = \sum_{x,y \in \mathbb{R}} |\hat{F}_{XY}(x,y) - \hat{F}_{X}(x)\hat{F}_{Y}(y)|
+
+where
+
+- $\hat{F}_X$ is the empirical CDF of X
+- $\hat{F}_Y$ is the empirical CDF of Y
+- $\hat{F}_{XY} is the empirical cdf of (X,Y)
+
+This is a rank test. In particular, the permutation p-values is the exact p-value. 
+
+**Theorem**
+
+The test is universally consistent for the null hypothesis of independence. 

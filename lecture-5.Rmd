@@ -1,0 +1,165 @@
+---
+title: "Math 185 Lecture 5"
+author: "Lucien Chen"
+date: "2024-04-16"
+output: html_document
+---
+
+## Lecture 5
+
+Suppose we want to know whether the observations come from a distribution in a given family of distributions $P_0$.
+
+**ex. Normality Test**
+
+Are the data normally distributed?
+
+We want to test
+
+$$ H_0: P \in P_0 \text{ versus } H_1: P \notin P_0 $$
+
+**ex. Normality Test**
+
+$P_0$ is the normal family,
+
+$$ P_0 = \{N(\mu, \sigma^2): \mu \in \mathbb{R}, \sigma^2 \in (0, \infty)\} $$
+
+The general idea is to 1. Estimate the distribution *under the null hypothesis* 2. Use as test statistic, the discrepancy between this distribution and the empirical distribution 3. Obtain the p-value by bootstrap (because the null distribution is not given but estimated).
+
+With the Kolmogorov-Smirnov approach, the test statistic is $$ D = \Delta(\hat{F}, \hat{F}_0) = sup|\hat{F}(x) - \hat{F}_0(x)| $$
+
+where
+
+$$ - \hat{F} \text{ is the empirical CDF} \\
+- \hat{F}\_0 \text{ is an estimator of F under the null hypothesis} $$
+
+**ex. Normality Test**
+
+$\hat{F}_0$ is the CDF of $N(\mu,\sigma^2)$ where $(\hat{\mu}, \hat{\sigma}^2)$ is the MLE for $(\mu, \sigma^2)$.
+
+The bootstrap p-value is derived by Monte Carlo based on sampling from $\hat{F}_0$ (and not $\hat{F}$).
+
+Let B be a large integer.
+
+For $b=1,...,B$, do the following: 1. Generate a sample from the estimated null distribution: $$ X_1^{(b)},...,X_n^{(b)} \text{ drawn iid from } \hat{F}_0$$
+
+2.  Compute the value of the test statistic: $$ D_b = sup|\hat{F}^{(b)}(x) - \hat{F}^{(b)}_0(x)| $$ The estimated p-value is
+
+$$ \frac{\#\{b: D_b \geq D_0\} + 1}{B + 1} $$ where $D+0$ is the observed value of the test statistic.
+
+**ex. Normality Test**
+
+The test is known as the Lilliefors Test.
+
+It turns out that, under the null hypothesis, the test statistic has the same distribution under *any* normal distribution. Because of that, it can be tabulated before even looking at a dataset.
+
+A real-value parameter of a distribution P is of the form $\varphi(P)$, wher $\varphi$ is a *functional* on distributions.
+
+ex. - $\varphi(P)$ = mean of $P$ - $\varphi(P)$ = median of $P$
+
+A confidence interval of a parameter $\varphi(P)$ is an interval *I* which is a function of the data:
+
+$$ I = [A, B], where A and B are random variables $$
+
+Its confidence level is the probability that *I* contains $\varphi(P)$:
+
+$$ \text{level of } I = \text{ probability that } \varphi(P) \in I $$ Suppose we want to compute a confidence interval at level $1 - \alpha$ for the. median denoted $\theta = \varphi(P)$.
+
+Define $$ q_k = \mathbb{P}(X_{(k)} \leq \theta) $$
+
+The q_k are independent of the underlying distribution.
+
+Indeed,
+
+$$ q_k = \mathbb{P}(\{i: X_i \leq \theta\} \geq k) \\
+= \mathbb{P}(Bin(n, \frac{1}{2}) \geq k) $$ since $\theta$ is the median.
+
+Now for \$ k \< l\$,
+
+$$ \mathbb{P}(X_{(k)} \leq \theta \leq X_{(l)}) = \mathbb{P}(X_{(k)}) - \mathbb{P}(X_{(l)} < 0) \\
+= q_k - q_l $$
+
+Indeed, because $P$ is assumed continuous, $X_{(l)}$ has a continuous distribution, so that
+
+$$ \mathbb{P}(X_{(l)} < \theta) = \mathbb{P}(X_{(l)} \leq \theta) = q_l $$
+
+We choose: - k largest such that $q_k \geq 1 - \alpha/2$ - l smallest such that $q_l \leq \alpha/2$
+
+Suppose the underlying distribution $P$ has a well-defined mean, denoted $\mu$, and that we want to compute a confidence interval at level $1 - \alpha$ for $\mu$.
+
+First assume that P is the normal distribution with mean $\mu$ and variance $\sigma^2$. also unknown.
+
+The (two-side) Student confidence interval for $\mu$ is
+
+$$ [\bar{X} - t_{n-1}^{(1 - \alpha/2)}\frac{S}{\sqrt{n}}, \bar{X} + t_{n-1}^{(\alpha/2)}\frac{S}{\sqrt{n}}] $$ $t_m^{alpha)}$ is the $\alpha$-quantile of the Student t-distribution with m degrees of freedom.
+
+It turns out that $t_{n-1}^{(\alpha/2)} = -t_{n-1}^{(1 - \alpha/2)}$ because the distribution is symmetric about the origin.
+
+The construction of the interval hinges on the fact that
+
+$$ T = \frac{\bar{X} - \mu}{S/\sqrt{n}} $$
+
+has the t-distribution with n-1 degrees of freedom when the sample is normal. This is regardless of $(\mu, \sigma^2)$.
+
+Indeed, for any $a < b$, $$ \mathbb{P}(\bar{X} - bS/\sqrt{n} \leq \mu \leq \bar{X} - aS/\sqrt{n}) \\
+= \mathbb{P}(a \leq T \leq B) \\
+= \phi_{n-1}(b) - \phi_{n-1}(a) $$
+
+where $\phi_{n-1}$ is the CDF of the t-distribution with n-1 degrees of freedom.
+
+Any choice of $a < b$ such that
+
+$$ \phi_{n-1}(b) - \phi_{n-1}(a) \geq 1 - \alpha $$
+
+yields a confidence interval at level $1 - \alpha$.
+
+The choice
+
+$$ a = -b = t_{n-1}^{(\alpha/2)} $$
+
+gives the *shortest* interval among these and results in the well known interval $$ [\bar{X} - t_{n-1}^{(1 - \alpha/2)}\frac{S}{\sqrt{n}}, \bar{X} + t_{n-1}^{(\alpha/2)}\frac{S}{\sqrt{n}}] $$
+
+The confidence level of this interval is exact if the underlying distribution is indeed normal.
+
+**Theory**
+
+If the underlying distribution has finite second moment, this interval has asymptotic $(n \rightarrow \infty)$ confidence level exactly $1 - \alpha$
+
+This is a simple consequence of the *central limit theorem* combined with *Slutsky's* theorem.
+
+In finite samples, the level is approximately correct if the sample size is large enough and the underlying distribution is not too asymmetric or heavy-tailed. (These are rules of thumb, although they tend to be arbitrary to some extent).
+
+In the real world, we have
+
+$$ T = \frac{\bar{X} - \mu}{S/\sqrt{n}} $$
+
+where $\mu$ is the smean of P, while $\bar{X}$ and S are the sample mean and sample standard deviation based on a sample size n from P.
+
+In the bootstrap world, we define
+
+$$ T_* = \frac{\bar{X}_* - \hat{\mu}}{S_*/\sqrt{n}} $$
+
+where $\hat{\mu}$ is the mean of $\hat{P}$, while $\bar{X})*$ and $S_*$ are the sample mean and sample standard deviation based on a sample of size n from $\hat{P}$.
+
+And it turns out that $\hat{\mu} = \bar{X}$.
+
+The distribution of $T_*$ (which depends on the data) is used as an estimate of the distribution of T.
+
+Let B be a large integer.
+
+For $b=1,...,B$, do the following:
+
+1. Generate a sample from $\hat{P}$:
+
+$$ X_1^{(b)},...,X_n^{(b)} \text{ drawn iid from } \hat{P} $$
+
+2. Compute the value of the bootstrap t-ratio:
+
+$$ T_b = \frac{\bar{X}_b - \bar{X}}{S_b/sqrt{n}} $$
+
+$$ \bar{X}_b = \frac{1}{n}\sum_{i=1}^n X_i^{(b)}, S_b^2 = \frac{1}{n-1}\sum_{i=1}^n(X_i^{(b)} - \bar{X}_b)^2 $$
+
+Returns the interval
+
+$$ [\bar{X} - t_{boot}^{(1-\alpha/2)}\frac{S}{\sqrt{n}}, \bar{X} - t_{boot}^{(\alpha/2)}\frac{S}{\sqrt{n}}] $$
+
+where $t_{boot}^{\alpha}$ is the $\alpha$-quantile of $T_1,...,T_B$.

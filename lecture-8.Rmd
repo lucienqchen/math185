@@ -1,0 +1,228 @@
+---
+title: "Math 185 Lecture 8"
+author: "Lucien Chen"
+date: "2024-04-25"
+output: html_document
+---
+
+## Lecture 8
+
+We have multiple unpaired samples or groups of observations representing hte same type of measurement.
+
+Group 1: $X_{1,1},...,X_{n_1,1}$
+
+Group 2: $X_{2,1},...,X_{n_2,1}$
+.
+.
+.
+
+Group n: $X_{n,1},...,X_{n_n,1}$
+
+Side-by-side boxplots
+
+Side-by-side histograms
+
+### All pairwise comparisons
+
+Suppose we want to test whether all samples come from the same distribution:
+
+$$ H_0:p_1=...=p_j $$
+
+#### Kolmogorov-Smirnov test(s)
+
+If $F_j$ denotes the distribution function (cdf) of $P_j$, the problem is equivalent to testing
+
+$$ H_0: F_1=...=F_J $$
+
+Let $\hat{F}_j$ denote the empirical cdf of $X_{1,J},...,X_{n_j,J}$
+
+The general idea is to reject for large values of 
+
+$$ \Delta(\hat{F}_1,...,\hat{F}_J) $$
+
+where $\Delta$ is a measure of discrepancy between J cdfs.
+
+Any such variant can be considered to be a type of Kolmogorov-Smirnov goodness-of-fit test.
+
+We can approxiamte the p-value by bootstrap.
+
+We can also obtain a p-value by permutation.
+
+
+#### Bootstrap
+
+Let B be a large integer.
+
+For $b=1,...,B$, do the following:
+
+1. Generate samples of size sizes $n_1,...,n_J$ from the estimated null distribution $\hat{P}$.
+
+2. Compute the value of the test statistic $D_b$.
+
+Return
+
+$$ \text{bootstrap MC p-value } = \frac{\#\{b: D_b \geq d\} + 1}{B + 1} $$
+
+where d is the observed value of the test statistic.
+
+#### Permutation
+
+The dataset is typically stored as a two-column data frame with the values in one column and the corresponding group labels in the other column.
+
+Under the null, the group labels are interchangeable.
+
+Said differently, the numerical values and group labels are randomly matched. More formally, the random variables in the combined sample are exchangeable.
+
+1. For each permutation $\pi$ of {1,...,N}, permute the combined sammple and reform the groups.
+
+2. Compute the value of the test statistic, obtaining $D_\pi$
+
+Return 
+
+$$ \text{permutation p-value} = \frac{\#\{\pi: D_\pi \geq d\}}{(n_1 + ... + n_J)!} $$
+
+where d is the observed value of the test statistic.
+
+### Tests based on ranks
+
+Let $R_{i,j}$ be the rank of $X_{i,j}$ in the combined sample.
+
+A rank test is a test based on a statistic that only depends on these ranks.
+
+Such a statistic can be computed based on the sample pattern - the vector of group labels obtained after ordering the values.
+
+With four groups labeled {1,2,3,4}, each of size 4, it might look like this:
+
+$$ 2 3 1 4 4 2 4 1 2 1 3 1 3 4 2 3 $$
+
+The Kolmogorov-Smirnov tests seen earlier are all rank tests. Any rank test is a permutation test. A rank test is invariant with respect to the application of any (strictly) increasing transformation to all the numerical values.
+
+#### Kruskal-Wallis test
+
+Define the rank sum of group jL
+
+$$ R_{.,j} = \sum_{i=1}^{n_j}R_{i,j} $$
+
+The Kruskal-Wallis test rejects for large values of
+
+$$ D = \sum_{j=1}^{J}{R_{.j}^2}{n_j} $$
+
+This is equivalent to rejecting for large values of 
+
+$$ \sum_{j=1}^{J} n_j (\frac{R_{.j}}{n_j} - \frac{N+1}{2})^2 $$
+
+comparing the group rank averages to the overall average rank.
+
+**Theory**
+
+Under the null hypothesis, when properly normalized, D has asymptotically the chi-squared distribution with J -1 degrees of freedom
+
+It's a rank test, therefore a permutation test, and the permutation p-value can be approximated via Monte Carlo
+
+### Comparing Means
+
+Let $\mu_j$ and $\sigma_j^2$ be the mean and variance of $P_j$.
+
+Suppose we want to test
+
+$$ H_0: \mu_1=...=\mu_J $$
+
+Let $\bar{X}_{.j}$ and $\S_j^2$ denoted the j-th sample mean and variance.
+
+Let \bar{X}_{..} denote the grand mean:
+
+$$ \bar{X}_{..} = \frac{1}{N} \sum_{j=1}^{J}\sum_{i=1}^{n_j}X_{ij} = \sum_{j=1}^{J} \frac{n_j}{N}\bar{X_{.j}} $$
+
+Compute the between groups sum of squares
+
+$$ T = \sum_{j=1}^{J}n_j(\bar{X}_{.j} - \bar{X}_{..})^2 $$
+
+also known as treatment sum of squares.
+
+Compute the within groups sum of squares
+
+$$ E = \sum_{j=1}^{J}\sum_{i=1}^{n_j} (X_{ij} - \bar{X}_{.j})^2 = \sum_{j=1}^{J}(n_j - 1)S_j^2 $$
+
+also known as error sum of squares.
+
+The F-test rejects for large values of 
+
+$$ F = \frac{T/(J - 1)}{E/(N - J))} = \frac{\text{between group sum}/\text{(number of groups - 1)}}{\text{within groups sum}/\text{sample size - number of groups}} $$
+
+In the classical setting, the group distributions are assumed to be normal with same variance $(\sigma_1^2=...=\simga_J^2)$.
+
+**Theory**
+
+In the classical setting, under the null hypothesis, F has the F-distribution with J - 1 and N - J dfs.
+
+The normality assumption is not cruicial.
+
+**Theory**
+If group distributions have same variance, under the null, F has asymptotically the chi-squared distribution with J - 1 df.
+
+The assumption of equal variances is cruicial.
+
+There is a Welch variant of the F-test which does not assume the variances to be equal.
+
+**Theory**
+
+Under the null hypothesis, the Welch F test has the chi-squared distribution with J -1 degrees of freedom.
+
+#### Bootstrap p-value
+
+Suppose we reject for large values of a statistic D, for example
+
+$$ D = \text{ between group sums of squares} $$
+
+To obtain a p-value, we craft a bootstrap world in which the null hypothesis is true and use the distribution of D in the bootstrap world as an estimate for its actual distribution under the null hypothesis.
+
+One can also obtain a p-value by permutation.
+
+Even though our intention might still be to compare the means, the permutation p-value is only valid under the more restricted null where $P_1=...=P_J$ (goodness-of-fit testing).
+
+### Repeated measures: multiple paired numerical samples
+
+Suppose we have multiple paired samples. This is often referred to as repeated measures, and presented as a table. There are I subjects (or experimental units) in the study. Each subject receives all J treaments.
+
+One way of formalizing the situation in which the different treatments have the same effect is the following null hypothesis:
+
+$$ H_0: \forall i=1,...,I, (X_{i,1},...,X_{i,j}) \text{ are exchangeable} $$
+
+Replace "exchangeable" with iid for a close variant.
+
+Let $R_{i,j}$ be the rank of $X_{i,j}$ among $\{X_{i,1},...,X_{i,j}\}$
+
+Compare how the ranks are computed in the context of unpaired groups.
+
+Defined the sum of the ranks for Treatment j:
+
+$$ R_{.j} = \sum_{i=1}^{I}R_{ij} $$
+
+This test rejects for large values of
+
+$$ G = \sum_{j=1}^{J} R_{.j}^2 $$
+
+**Theory**
+
+Under the null hypothesis, when properly normalized, G has asymptotically the chi-squared distribution with J - 1 degrees of freedom.
+
+### Two-way designs
+
+Suppose we have a two-way design with two factors:
+
+- Blocking: I blocks, indexed by i
+- Treatment: J levels, indexed by j
+
+These define $I \times J$, also called cels.
+
+Let $X_{i,j,k}$ be observation k in cell (i,j).
+
+The observations in each cell ($X_{i,j,k}$, where k varies) are assumed i.i.d with distribution dentoed $P_{i,j}$.
+
+The main question is typically whether the treaments are different. Approaching this as the task of comparing distributions leads to testing
+
+$$ H_0: P_{i,1}=...=P_{i,J} \ \forall \ i $$
+
+Ths situation is very similar to a repeated measures design. In particular, values in different blocks are kept separate.
+
+Values are only compared to other values in the same block.

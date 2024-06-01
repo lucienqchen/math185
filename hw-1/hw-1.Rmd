@@ -1,0 +1,142 @@
+---
+title: "Homework 1"
+author: "Lucien Chen"
+date: "2024-04-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+options(warn=-1)
+```
+
+## Homework 1
+
+### Problem 1
+
+Let $p$ be the probability that a newborn baby is a girl.
+
+$$\text{H}_0: p_1=p_2=...=p_n$$ $$\text{H}_1: p_1 \neq p_2 \neq ... \neq p_n$$ Our null hypothesis is that the probability that a newborn baby is a girl is the same for all counties in California where each $i \in \{1,2,...,n\}$ represents a specific county. The alternative hypothesis is that the probability that a newborn baby is a girl is not the same for all counties in California.
+
+```{r load, echo=TRUE}
+load("natality-california-2022.rda")
+head(df)
+```
+
+```{r data, echo=TRUE}
+df_summary <- df %>% group_by(County) %>% summarise(
+  Total_Births = sum(Births),
+  Female_Births = sum(ifelse(Gender == "Female", Births, 0)),
+  Male_Births = sum(ifelse(Gender == "Male", Births, 0))
+)
+
+df_summary <- df_summary %>% select(!Total_Births)
+df_summary
+```
+
+Now that we have calculated the percentage of female births for each county, let's visualize it.
+
+```{r plot, echo=TRUE}
+ggplot(
+  df_summary,
+  aes(
+    x=County,
+    y=Female_Births/(Female_Births + Male_Births),
+    fill=County
+  )
+) + geom_bar(
+  stat="identity"
+) + labs(
+  x="County", y="Percentage of Female Births (%)", title="Percentage of Female Births by County"
+) + theme_minimal() + theme(
+  axis.text.x = element_text(angle=90, hjust=1),
+  legend.text = element_text(size=4)
+)
+```
+
+Now, let's conduct our hypothesis test to see what we get.
+
+```{r test, echo=TRUE}
+chisq.test(df_summary %>% subset(select=c(Female_Births, Male_Births)))
+```
+
+After running our chi-squared test, we get a p-value of approximately 0.005. Based on this result, we would reject the null hypothesis that the probability that a newborn girl is the same across all counties in California at a significance level of 0.05. It seems that the probabilities do differ across counties in California.
+
+### Problem 2
+
+I define chisq.power with the following code:
+
+```{r function, echo=TRUE}
+chisq.power <- function(k, t, n, B = 2000){
+  R = vector(length=B)
+  for (i in 1:B){
+    alpha = 0.05
+    two_k = 2*k
+    pt_data = c(rep(1/two_k + t, k), rep(1/two_k - t, k))
+    obs = sample(pt_data, n, replace=TRUE)
+    exp = sample(1:two_k, n, replace=TRUE)
+    X = chisq.test(obs, exp)
+    R[i] = as.integer(X$p.value <= alpha)
+  }
+  return(mean(R))
+}
+
+```
+
+Now, let's plot the curve, using our function:
+
+```{r plot-2, echo=TRUE}
+k = 6
+t = seq(0.01, 1/(2*k), 1/(2*k)/10)
+powers <- vector(length=length(t))
+for (i in 1:length(t)){
+  powers[i] = chisq.power(k, t[i], 100)
+}
+plot(x=t, y=powers)
+```
+
+### Problem 3
+
+```{r load-2, echo=TRUE}
+load("school-improvement.rda")
+head(d)
+```
+
+Like before, we need to do some data manipulation to get it to be in the format we want.
+
+```{r data-2, echo=TRUE}
+model_summary <- d %>% group_by(State) %>% summarize(
+  transformation_count = length(which(Model.Selected == "Transformation")),
+  restart_count = length(which(Model.Selected == "Restart")),
+  turnaround_count = length(which(Model.Selected == "Turnaround")),
+  closure_count = length(which(Model.Selected == "Closure"))
+  )
+head(model_summary)
+```
+
+Here's what our data looks like. Now let's visualize it using a stacked bar plot.
+
+```{r plot-3, echo=TRUE}
+ggplot(model_summary %>% gather(value, variable, -State), aes(x=State, y=variable, fill=value)) + 
+geom_bar(stat="identity") +
+labs(
+  x="State",
+  y="Count",
+  title="Count of Model by State"
+) + theme_minimal() + theme(
+  axis.text.x = element_text(size=5, angle=45, hjust=1)
+)
+```
+
+Finally, as before we are going to conduct a chi-squared test. Our hypotheses are
+
+$$ \text{H}_0 = \text{ There is no association between the models that each school selected and the state where the school is located.} $$ versus $$ \text{H}_1 = \text{ There is an association between the models that each school selected and the state where the school is located.} $$
+
+```{r test-2, echo=TRUE}
+chisq.test(model_summary %>% subset(select=c(closure_count, restart_count, transformation_count, turnaround_count)))
+```
+
+Based on our test, we would reject the null that the data are independent, and hence that there is no association between the state the school is from and the model they selected at the 0.05 significance level. It seems that there is an association between the state that a school is located in and the model they picked.

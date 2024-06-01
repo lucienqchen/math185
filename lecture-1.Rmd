@@ -1,0 +1,133 @@
+---
+title: "Math 185 Lecture 1"
+author: "Lucien Chen"
+date: "2024-04-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Lecture 1
+
+### Categorical Data
+
+ex. We want to know if a given (6-face) die is fair. To assess that, we throw it $n=400$ times and record the successive faces, denoted
+
+$$ X_1,...,X_n $$ with values $$ \{1,...,6\} $$
+
+This is one sample categorical data. (In Biostatistics, a categorical variable is called a factor and the values it takes are called levels).
+
+Assessing whether the die is fair is formalized as the following hypothesis testing problem:
+
+$$ H_0: the \,die \,is \,fair $$ versus $$ H_1: the \,die \,is \,not \,fair $$
+
+We assume the throws are done in the exact same way and the result of a throw does not depend on the result of other throws and hence independently and identically distributed (i.i.d).
+
+In our example, we are testing the null hypothesis:
+
+$$ H_0: X_1,...,X_n \sim Unif(\{1,...,6\}) $$
+
+The main summary statistics for this kind of data are the counts (frequencies) for each of the six digits.
+
+Under the i.i.d assumption, the counts are jointly sufficient. When the trials are i.i.d, their order does not carry information about their distribution and what is left can be characterized by $$ (N_1,...,N_6) $$
+
+The counts can be plotted as either a bar chart (aka bar plot) or a pie chart. The human eye tends to be more accurate on bar charts compared to pie charts.
+
+### Pearson chi-squared goodness-of-fit test
+
+This test compares the observed counts
+
+$$ N_1,..,N_6 $$
+
+with the expected counts under the null hypothesis
+
+$$ E_0(N_1),...,E_0(N_6) $$
+
+$$ (E_0 \,denotes \,the \,expectation \,under \,the \,null \,hypothesis) $$
+
+In our example,
+
+$$ E_0(N_1) = ... = E_0(N_6) = \frac{n}{6} $$
+
+Specifically, the text rejects for large values of the following statistic
+
+$$ D = \sum \frac{(Obs - Exp)^2}{Exp} $$ $$ = \sum_1^6\frac{(N_s - n/6)^2}{n/6} $$
+
+In general, suppose we observe an i.i.d sample from a discrete distribution
+
+$$ X_1,...,X_n \in \{a_1,...,a_s} $$
+
+with
+
+$$ P(X_i=a_s) = p_s, \, s=1,...,S $$
+
+Therefore, (p_1,...,p_s) defines the underlying distribution.
+
+The Pearson test is an approximation to the likelihood ratio test which rejects for large values of
+
+$$ Q = 2 \sum_{s=1}^S N_s \log(\frac{N_s}{np_s^0}) $$
+
+Why prefer Pearson to LRT? In the pre-computer era, D was easier to compute as opposed to Q.
+
+### Large sample approximation of the p-value
+
+**Theorem**: Under the null hypothesis, D has asymptotically $(n \rightarrow \infty)$ the chi-squared distribution with S-1 degrees of freedom.
+
+This should be understood as a numerical approximation, meaning that
+
+$$ P_0=(D\geq d) \rightarrow P(\chi \geq d), n \rightarrow \infty $$
+
+This is useful because $P_0(D\geq d)$ is the p-value if d is the observed value of the test statistic.
+
+Let m be a positive integer, and suppose $Z_1,...,Z_m$ are i.i.d standard normal. Then $$ Y = Z_1^2+...+Z_m^2 $$ has the chi-squared distribution with m degrees of freedom.
+
+With access to a computer, we can estimate the exact p-value via Monte Carlo simulation. This consists of simulation the situation under the null hypothesis to estimate the distribution of the test statistics under the null hypothesis.
+
+Let B be a large integer.
+
+For $b=1,...,B$ do the following:
+
+1.  Generate a sample of same size n from the null distribbution: $$ X_1^{(b)},...,X_n^{(b)} \,drawn \, i.i.d \, from \, (p_1^0,...,p_s^0) $$
+
+2.  Compute the value of the test statistic: $$ D_b = \sum_{s=1}^S \frac{(N_s^{(b)} - np_s^0)^2}{np_s^0} $$ The estimated p-value is
+
+$$ MC \, p{\text -}value = \frac{\#\{b: D_b \geq D_0]\} + 1}{B + 1} $$
+
+Why use the large sample theory when the null distribution can be more accurately estimated via Monte Carlo?
+
+In the pre-computer era, relying on analytical approximations was needed. Today, a Monte Carlo is often easy to implement and can be more accurate when the sample size is small.
+
+### Goodness of Fit Test
+
+For example, Does a dice/coin have a specific distribution?
+
+p-value: Asymptotic theory - approximately chi-squared with n-1 d.o.f; bootstrap - simulate to get p-value
+
+test-stat: $\sum \frac{(\text{obs} - \text{exp})^2}{\text{exp}}$
+
+ex. Does baseball hitting follow a binomial distribution?
+
+```{r pressure, echo=FALSE}
+null_probs <- dbinom(0:3, 3, 0.312)
+obs = c(17, 31, 17, 5)
+chisq.test(obs, p=null_probs)
+sum((obs - 70*null_probs)^2/(70*null_probs))
+```
+
+### Goodness of Fit Test for n-sample Data ($n \geq 2$)
+
+For example, do n dice have the same distribution?
+
+p-value: Asymptotic theory: approximately chi-squared with d.o.f n - 1, bootstrap
+
+### Pearson Test for Independence
+
+For example, are two dice independent?
+
+p-value: Asymptotic theory: approximately chi-squared with d.o.f n-1, bootstrap, permutation test 
+
+### Fisher's Exact Test
+
+Can only be used for 2x2 contingency table, small data

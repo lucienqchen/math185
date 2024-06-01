@@ -1,0 +1,234 @@
+---
+title: "Math 185 Lecture 11"
+author: "Lucien Chen"
+date: "2024-05-07"
+output: html_document
+---
+
+## Lecture 11
+
+### Multiple Testing
+
+A null hypothesis is a set of distributions.
+
+ex. For one sample numerical data i.i.d from a distribution with mean $\mu$, the null hypothesis
+
+$$ H_0: \mu \leq \mu_0 $$
+
+is equivalently expressed as
+
+$$ H_0: \text{ all distributions with mean } \leq \mu_0 $$
+
+Consider the test that rejects for large values of a statistic S.
+
+The p-value p(s) corresponding to the observed value S=s is the maximum probability over any distribution in the null hypothesis of observing $S \geq s$,
+
+$$ p(s) = \text{ max probability that } S \geq s \text{ under any null distribution}$$
+
+The p-value $p(s)$ is itself a statistic and the same test rejects for small values of $p(s)$.
+
+**Theorem**
+
+Under the null hypothesis, meaning, under any null distribution, the probability that $p(S) \leq \alpha$ is bounded by $\alpha$, for all $\alpha \in [0,1]$.
+
+Hence, if we reject having observed $S=s$ with $p(s) \leq \alpha$, we are confident at level $\alpha$ that we are correct.
+
+### The problem of multiple testing
+
+Suppose we are confronted with m hypothesis testing problems, where the null hypotheses are denoted
+
+$$ H^1,...,H^m$$
+
+Again, each $H^i$ is a null hypothesis, representing a different question we have on the underlying distribution that generated the data.
+
+Let
+
+$$ I_0 ] \{i: H^i \text{ is true}\} \text{ and } m_0 = |I_0| $$
+
+be the set indexing the true nulls and number of nulls.
+
+Suppose we use a test statistic $S^i$, to test the null $H^i$.
+
+Let $P^i$, denote the corresponding p-value. This is the maximum probability under any distribution in $H^i$ of observing a value of $S^i$ at least as large as the observed value.
+
+For any level $\alpha \in [0,1]$ (e.g, $\alpha = 0.10$), the expected number of p-values $\leq \alpha$ can be as large as $m_0\alpha$.
+
+### Multiple test
+
+A multiple test is a function that decides which null hypotheses to reject based on the p-values
+
+$$ P_1,...,P_m $$
+
+Thus, a multiple tes ttakes as input the p-values and a level and returns a subset of {1,...,m} indicating the null hypotheses to reject.
+
+Suppose we apply a particular multiple test in a particular situation, and define:
+
+R = number of rejections
+
+$T_1$ = number of type I errors (aka false discoveries)
+
+$T_2$ = number of type II errors (aka missed discoveries)
+
+### Family-wise error rate (FWER)
+
+The family-wise error rate (FWER) is the probability that the multiple test makes at least one type I error:
+
+$$ FWER = \mathbb{P}(T_1 \geq 1) $$
+
+The multiple test is said to be controlling the FWER at level $\alpha$ if
+
+$$ FWER \leq \alpha $$
+
+A multiple test controls the FWER at ,e.g., 10% if, with probability at least 90%, all the rejections it makes are correct.
+
+### Bonferroni procedure
+
+To control the FWER at level $\alpha$, the Bonferroni procedure perform each test at level $\alpha$/m
+
+$$ \text{reject } H^i if P_i \leq \frac{\alpha}{m} $$
+
+**Theorem**
+
+The Bonferroni procedure controls the FWER at $\alpha$.
+
+This assumes that the p-values are valid. If they are only approximately valid, then the control of the FWER can only be approximate.
+
+### Holm procedure
+
+To control the FWER at level $\alpha$, the Holm procedure works as follows:
+
+1.  Order the p-value:
+
+$$P_{(1)}\leq \dots \leq P_{(m)}$$
+
+Let $H^{(1)},\dots,H^{(m)}$ denote the corresponding null hypotheses.
+
+2.  Let R denote the smallest $r \geq 0$ such that
+
+$$ P_{(r + 1)} > \frac{\alpha}{m - r} $$
+
+3.  If R \> 0,
+
+reject $H^{(1)},\dots,H^{(R)}$
+
+If R=0, do not reject any null hypothesis.
+
+Consider two multiple testing procedures, A and B. We say that A is more powerful that B if A rejects al the hypotheses that B rejects (and possibly more).
+
+If both A and B control the FWER at the desired level, and A is more powerful than B, then we prefer to use A instead of B.
+
+**Theorem**
+
+At the same FWER level $\alpha$, the Holm procedure is more powerful than the Bonferroni procedure.
+
+### Hochberg procedure
+
+To control the FWER at level $\alpha$, the Hochberg procedure works as follows:
+
+1.  Order the p-values:
+
+$$ P_{(1)} \leq \dots \leq P_{(m)} $$
+
+2.  Let R denote the largest $r \geq 0$ such that
+
+$$ P_{(r)} \leq \frac{\alpha}{m + 1 - r} $$
+
+3.  If R \> 0,
+
+$$ \text{reject } H^{(1)},...,H^{(R)} $$
+
+if R = 0, do not reject any null hypothesis.
+
+Equivalently,
+
+$$ \text{reject } H^{(i)} \text{ if } P_{(j)} \leq \frac{\alpha}{m-j+1} \text{ for some } j \geq i $$
+
+This is a step-up procedure as it moves from the least significant to the most significant p-value.
+
+**Theorem**
+
+If the p-values are independent, the Hochberg procedure controls the FWER at $\alpha$.
+
+This assumes that the p-values are valid.
+
+### False discovery rate (FDR)
+
+The false discover rate (FDR) is the expected proportion of false rejections that the multiple test makes
+
+$$ FDR = \mathbb{E}(\frac{T_1}{max(R,1)}) $$
+
+The procedure controls the FDR at level $\alpha$ if
+
+$$ FDR \leq \alpha $$
+
+A multiple test controls the FDR at , e.g., 10% if the expected proportion of rejects that are incorrect is bounded by 10%.
+
+**Theorem**
+
+FWER control at level $\alpha$ implies FDR control at level $\alpha$.
+
+### Benjamini-Hochberg Procedure
+
+To control the FDR at level $\alpha$, the Benjamini-Hochberg procedure works as follows:
+
+1.  Order the p-values:
+
+$$ P_{(1)},\dots,P_{(m)} $$
+
+2.  Let R denote the largest $r \geq 0$ such that
+
+$$ P_{(r)} \leq \frac{\alpha r}{m} $$
+
+3.  If R \> 0,
+
+$$ \text{reject } H^{(1)},\dots,H^{(R)} $$
+
+If R = 0, do not reject any null hypothesis.
+
+#### Benjamini-Yekutieli Procedure
+
+The Benjamini-Yekutieli Procedure is the Benjamini-Hochberg procedure with $\alpha/C_m$ in place of $\alpha$, where
+
+$$ C_m = 1 + \frac{1}{2} + \dots + \frac{1}{m} \sim log m $$
+
+**Theorem**
+
+The Benjamini-Yekutieli procedure controls the FDR at $\alpha$.
+
+This assumes the p-values are valid.
+
+The BY procedure has less power than the BH procedure, but it does not require the p-values to be independent.
+
+### Adjusted p-values
+
+In a multiple testing context, the p-values are often adjusted to take into account the whole set of p-values.
+
+If the FWER (or FDR) is controlled at $\alpha$, then any hypothesis with an adjusted p-value less than or equal to $\alpha$ is rejected.
+
+To control the FWER, the p-values are adjusted as follows depending on the method used:
+
+If an adjusted p-value exceeds 1, it is then truncated at 1.
+
+**Bonferroni**
+
+$$ p_{(i)}^{bon} = mP_{(i)} $$
+
+**Holm**
+
+$$ P_{(i)}^{hom} = max\{(m-j+1)P_{(j)}, \text{ over j such that } P_{(j)} \leq P_{(i)}\} $$
+
+**Hochberg**
+
+$$ P_{(i)}^{hoch} = min\{(m-j+1)P_{(j)}, \text{ over j such that }P_{(j)} \geq P_{(i)}\} $$
+
+To control the FDR, the p-values are adjusted as follows depending on the method used:
+
+If an adjusted p-value exceeds 1, it is then truncated at 1.
+
+**Benjamini-Hochberg**
+
+$$ P_{(i)}^{bh} = min\{(m/j)P_{(j)}, \text{ over j such that } P_{(j)} \geq P_{(i)}\} $$
+
+**Benjamini-Yekutieli**
+
+$$ P_{(i)}^{by} = min\{(mC_m/j)P_{(j)}, \text{ over j such that } P_{(j)} \geq P_{(i)}\} $$

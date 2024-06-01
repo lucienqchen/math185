@@ -1,0 +1,181 @@
+---
+title: "Math 185 Lecture 4"
+author: "Lucien Chen"
+date: "2024-04-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Lecture 4
+
+### One-Sample Numerical Data
+
+quantiles, boxplot, histogram, bootstrap confidence intervals, bootstrap p-value, goodness of fit tests
+
+We assume we have data of the form
+
+$$ X_1,...,X_n \text{ with values in the reals} $$
+
+We assume that these are i.i.d from an underlying *continuous distribution* $P$ with distribution function $F$ and density $f$.
+
+Two main types of summary statistics: - location statistics: mean, median, other quantiles/percentiles - scale statistics: standard deviation, median absolute deviation, interquartile range
+
+#### Location Statistics
+
+The sample mean is defined as
+
+$$\bar{X} = \text{mean}(X_1,...,X_n) = \frac{1}{n} \sum_{i=1}^n X_i$$
+
+The order statistics are defined as an ordering of a sample
+
+$$ X_{(1)} \leq ... \leq X_{(n)} $$
+
+The sample median is defined as
+
+$$\text{median}(X_1,...,X_n) = X_{(n+1)/2} \text{ if n is odd or} \frac{X_{(n/2)} + X_{(n/2 + 1)}}{2} \text{ if n is even}$$
+
+Let $$p_i = \frac{i-1}{n-1}, i=1,...,n$$ Fix $\alpha \in [0,1]$ and let $i$ be such that
+
+$$p_i \leq \alpha \leq p_{i+1} $$
+
+Then there is \$b \in [0, 1] \$ such that
+
+$$ \alpha = (1-b)p_i + bp_{i + 1} $$
+
+The sample $\alpha$-quantile is defined as
+
+$$ (1-b)X_{(i)} + bX_{(i+1)} $$
+
+1st quartile [$\alpha = 0.25$], median [$\alpha = 0.5$], 3rd quartile [$\alpha = 0.75$]
+
+#### Scale Statistics
+
+The sample standard deviation is the square root of the sample variance defined as
+
+$$ S^2 = Var(X_1,...,X_n) = \frac{1}{n-1}\sum_{i=1}^n (X_i - \bar{X})^2 $$
+
+The mean absolute deviation (MAD) is defined as
+
+$$ MAD(X_1,...,X_n) = \text{median}(\|X_1 - M\|,...,\|X_n - M\|) \\ \text{where } M = \text{median}(X_1,...,X_n) $$ The interquartile range is defined as
+
+$$ IQR = Q_3 - Q_1 $$
+
+where $Q_1$ and $Q_3$ are the 1st and 3rd (sample) quantiles.
+
+There are various ways of plotting these summary statistics, in particular, the boxplot offers a schematic view of the main quantiles.
+
+The distribution itself can be visualized in a number of ways:
+
+-   A histogram is a piecewise constant estimate of the density
+-   The empirical distribution function is a piecewise constant estimate of the distribution function
+
+##### Boxplot
+
+A boxplot helps us visualize how the data is spread out: - The box represents the IQR - The line within the box represents the median - The top whisker is at the largest observation within 1.5 $\times$ the length of the IQR - The observations falling outside of the whiskers are plotted as points and may be outliers
+
+##### Histogram
+
+A histogram is a piecewise constant estimate of the population probability density function (PDF)
+
+Suppose the bins are the intervals $((s-1)h, sh]$, $s$ an integer (Note that h is the bin width).
+
+The number of observatioons in the $s$-th bin is
+
+$$ N_s = \#\{i: (s-1)h < X_i \leq sh\} $$ A bar plot of these bin counts is produced.
+
+As a function, the histogram is defined as
+
+$$ \hat{f_h}(x) = \frac{N_s}{nh} \text{ when } (s-1)h < x \leq sh $$ \##### Empircal distribution function
+
+The empirical distribution is the sample equivalent of the population distribution: It is the uniform distribution on the sample $X_1,...,X_n$ so that for any set $\mathrm{A}$,
+
+$$ \hat{P}(\mathrm{A}) = \frac{\#\{i: X_i \in \mathrm{A}\}}{n} $$ Drawing from the empirical distribution amounts to sampling uniformly at random from the data {$X_1,...,X_n$}.
+
+**Theory** The empirical distribution $\hat{P}$ is a consistent estimator for the population distribution $P$.
+
+Indeed for any set $\mathrm{A}$,
+
+$$ \hat{P}(\mathrm{A}) = \frac{\#\{i: X_i \in \mathrm{A}\}}{n} = \frac{1}{n}\sum_{i=1}^n Y_i $$ where $Y_i = \mathbb{I}\{X_i \in \mathrm{A}\}$ are i.i.d Bernoulli with parameter $P(\mathrm{A})$
+
+Let $Y$ be a generic $Y_i$. Applying the law of large numbers, we obtain the following convergence in probability:
+
+$$ \frac{1}{n}\sum_{i=1}^n Y_i \rightarrow \mathbb{E}(Y) = P(\mathrm{A}), n \rightarrow \infty $$ The empirical distribution function is the distribution function (CDF) of the empirical distribution:
+
+$$\hat{F}(x) = \frac{1}{n}\sum_{i=1}^{n} \mathbb{I}\{X_i \leq x\} $$ It is a piecewise constant function.
+
+**Theory** The empirical distribution function $\hat{F}$ is a pointwise consistent estimator for the population distribution function $F$.
+
+Indeed, take any point $x$. Defining \mathrm{A} = (-\infty, x], we have in probability as $n \rightarrow \infty$,
+
+$$ \hat{F}(x) = \frac{1}{n} \sum_{i=1}^{n} \mathbb{I}\{X_i \leq x\} = \frac{1}{n} \sum_{i=1}^{n} \mathbb{I}\{X_i \in \mathrm{A}\} = \hat{P}(\mathrm{A}) \rightarrow P(\mathrm{A}) = F(x) $$
+
+### Goodness of Fit Testing: Simple
+
+Suppose we want to know whether the observations come from a given distribution $P_0$.
+
+ex. Are the data uniformly distributed in [0, 1]?
+
+We want to test:
+
+$$ H_0: P=P_0 \text{ versus } H_1:P \neq P_0 $$ **Kolmogorov-Smirnov test** If $P_0$ has distribution function $F_0$, the problem is equivalent to
+
+$$ H_0: F=F_0 \text{ versus } H_1: F \neq F_0 $$
+
+The general idea is to reject for large values of
+
+$$ \Delta (\hat{F}, F_0) $$
+
+for a choice of $\Delta$ among measures of discrepancy between distribution functions.
+
+The Kolmogorov-Smirnov test uses the sup-norm:
+
+$$ \Delta(F,F_0) = \text{sup}_{-\infty < x < \infty} \|F(x) - F_0(x)\|$$
+
+Explicitly, the test rejects for large values of
+
+$$ D = \text{sup}_{-\infty < x < \infty} \| \hat{F}(x) - F_0(X)\| $$
+
+This statistic can be easily computed using the formula
+
+$$ D = max_{i=1,...,n} \ max\{\frac{i}{n} - F_0(X_{(i)}, F_0(X_{(i)}) - \frac{i}{n}\} $$
+
+**Theory** Under the null hypothesis, $\sqrt{n}D$ has asymptotically ($n \rightarrow \infty$) the Kolmogorov Distribution.
+
+It is defined via its distribution function, given by
+
+$$ t \rightarrow 1 - 2 \sum_{k=1}^n (-1)^{k-1}\exp{(-2k^2t)} $$ Since the null hypothesis is simply, we can approximate the exact p-value by Monte Carlo.
+
+It turns out that even in finite samples, the distribution of D under $P_0$ does not depend on $P_0$ as long as $P_0$ is continuous.
+
+### Pearson Test
+
+If $P_0$ has density $f_0$, the problem is equivalent to
+
+$$ H_0: f = f_0 \text{ versus } H_1: f \neq f_0 $$
+
+The general idea is to reject for large values of
+
+$$ \Delta(\hat{f}, f_0) $$
+
+where $\hat{f}$ is some estimator for $f$ and $\Delta$ is a measure of discrepancy between density functions such as
+
+$$ \Delta(f, f_0) = \int (f(x) - f_0(x))^2dx $$ A closely related approach consists in applying the Pearson goodness-of-fit test for categorical data after binning.
+
+The observed coutns are
+
+$$ N_s = \#\{i: (s-1)h < X \leq sh\} $$
+
+The expected counts are
+
+$$ \mathbb{E}_0(N_s) = np_s^0, \text{ where } p_s^0 = \int_{(s-1)h}^{sh} f_0(x)dx $$
+
+We reject for large values of
+
+$$ D = \sum_{s=1}^{S} \frac {(N_s - np_s^0)^2} {np_s^0} $$
+
+The p-value may be approximated by Monte Carlo. (The choice of bins is not trivial).
+
+

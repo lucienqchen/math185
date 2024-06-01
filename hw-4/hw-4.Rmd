@@ -1,0 +1,126 @@
+---
+title: "Math 185 Homework 4"
+author: "Lucien Chen"
+date: "2024-05-18"
+output: html_document
+---
+
+## Homework 4
+
+``` {r setup, echo=TRUE}
+library(readr)
+library(dplyr)
+library(ggplot2)
+df <- read.csv("cars.csv")
+head(df)
+```
+
+### Question 1
+
+a) We want want investigate whether the drive train affects the city mpg that a car gets or not. We can formulate the hypotheses as follows:
+
+Let $\mu_i$ denote the average city mpg for a drive train i, then we can formulate the hypotheses as follows:
+
+$$
+H_0: \mu_1=\mu_2=\dots=\mu_n \text{ versus } H_1: \exists \ \mu_i \neq \mu_j, i \neq j 
+$$
+
+where n represents the number of different types of drive trains, and each $i \in \{1,2,...,n\}$ corresponds to a drive train.
+
+b)
+```{r violin, echo=TRUE}
+p <- df %>% ggplot() + aes(Engine.Information.Driveline, Fuel.Information.City.mpg, color=Engine.Information.Driveline)
+p + geom_violin() + labs(title="City MPG by Drivetrain")
+```
+
+Here from the violin plot, we can observe that on average, front-wheel drive cars have the highest city fuel consumption whereas four-wheel drive cars have the lowest.
+
+c) Since we are comparing multiple group means, I will carry out a test using analysis of variance (anova). The assumptions of such a test are that the group distributions are assumed to have homogenous variance (although there is a variant which does not make such an assumption), independence between the groups, and normality. The p-value is obtained by a F-statistic calculated by the ANOVA test which is a ratio of variances between the groups means and the variance within the groups.
+
+```{r anova, echo=TRUE}
+test <- aov(Fuel.Information.City.mpg ~ Engine.Information.Driveline, data=df)
+summary(test)
+```
+As we can see from the results of the test above, the p-value obtained from the test above is incredibly small and we would reject the null hypothesis at most levels of significance. It seems that the drivetrain of the car has an impact on its city fuel consumption.
+
+### Question 2
+
+a) For this question, I will investigate whether the type of transmission a car has an affect on the city fuel consumption or not. This results in a two-way partition of the data, automatic and manual where we will let automatic be the main categorical variable and manual be the secondary that I am controlling for. I define the hypotheses as follows:
+
+$$
+H_0: \mu_A = \mu_M
+\\
+\text{versus}
+\\
+H_1: \mu_A \neq \mu_M
+$$
+
+```{r boxplot, echo=TRUE}
+p <- df %>% ggplot() + aes(Identification.Classification, Fuel.Information.City.mpg, color=Identification.Classification) + geom_boxplot()
+p
+```
+
+From the visualization above, we can see that manual cars have better city fuel consumption that automatic cars on average.
+
+c) Now I will apply the two-sample t-test to compare the means between the two groups and perform permutation to obtain the p-value.
+
+```{r permutation, echo=TRUE}
+compute_t <- function(data) {
+  t <- t.test(Fuel.Information.City.mpg ~ Identification.Classification, data=data)$statistic
+  return(t)
+}
+obs_t <- compute_t(df)
+n <- 1000
+permutations <- numeric(n)
+for (i in 1:n) {
+  permutation_data <- df
+  permutation_data$Fuel.Information.City.mpg <- sample(df$Fuel.Information.City.mpg)
+  permutations[i] <- compute_t(permutation_data)
+}
+p_value <- mean(abs(permutations) >= abs(obs_t))
+p_value
+```
+
+From our permutation test, we obtain a p_value of 0. We reject the null, it appears that the average city fuel consumption differs between automatic and manual cars.
+
+### Question 3
+
+```{r simulation, echo=TRUE}
+M <- 1e4
+n <- 100
+simulate_power <- function(mu, alpha) {
+  f_rejects <- numeric(M)
+  pair_rejects <- numeric(M)
+  for (i in 1:M) {
+    data <- data.frame(
+      group = rep(1:g, each = n),
+      value = c(rnorm(n, mu, 1), replicate(g-1, rnorm(n, 0, 1)))
+    )
+    f_test <- oneway.test(value ~ group, data=data, var.equal=F)
+    pair_test <- pairwise.t.test(data$value, data$group, p.adjust.method="holm", pool.sd=F)
+    f_rejects[i] = f_test$p.value < alpha
+    pair_rejects[i] = any(pair_test$p.value < alpha, na.rm=T)
+  }
+  return(list(power_f = mean(f_rejects), power_pair = mean(pair_rejects)))
+}
+mus <- seq(0, 2, length.out=10)
+G <- 3:10
+res <- vector(mode="list")
+for (g in G) {
+  powers <- lapply(mus, function(mu) {
+      simulate_power(mu, alpha=0.10)
+    }
+  )
+  res[[as.character(g)]] <- data.frame(
+    mu = mus,
+    power_f = sapply(powers, function(x) {x$power_f}),
+    power_pair = sapply(powers, function(x) {x$power_pair})
+  )
+}
+
+plots <- lapply(names(res), function(g) {
+  data <- res[[g]]
+  ggplot(data, aes(x=mu)) + geom_line(aes(y=power_f, color="Welch F-test")) + geom_line(aes(y=power_pair, color="Pairwise Welch t-test with Holm's Correction")) + labs(title = paste("Power Comparison for g=", g))
+})
+plots
+```
